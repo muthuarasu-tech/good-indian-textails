@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}{{ bill.bill_no }} · {{ business.name }}{% endblock %}
+
+{% block content %}
+<div class="invoice-toolbar">
+    <a class="btn btn-ghost" href="{{ url_for('bills') }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+        Back to bills
+    </a>
+    <div class="invoice-toolbar-actions">
+        <a class="btn btn-secondary" href="{{ url_for('new_bill') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+            New bill
+        </a>
+        <button type="button" class="btn btn-primary" data-print>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Print invoice
+        </button>
+    </div>
+</div>
+
+<article class="invoice-paper" id="invoice">
+    <div class="invoice-top-rule"></div>
+
+    <header class="invoice-header">
+        <div class="invoice-brand">
+            <span class="invoice-mark">GI</span>
+            <div>
+                <h2>Good Indian <em>Textile</em></h2>
+                <p>{{ business.tagline }}</p>
+            </div>
+        </div>
+        <div class="invoice-title">
+            <span>INVOICE</span>
+            <strong>{{ bill.bill_no }}</strong>
+        </div>
+    </header>
+
+    <div class="invoice-ornament" aria-hidden="true">
+        <span></span>
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2.1 6.4L21 12l-6.9 2.6L12 21l-2.1-6.4L3 12l6.9-2.6L12 3z" fill="currentColor"/></svg>
+        <span></span>
+    </div>
+
+    <section class="invoice-info">
+        <div class="invoice-bill-to">
+            <span class="invoice-label">Billed to</span>
+            <h3>{{ bill.customer_name }}</h3>
+            <p>Customer ID: <strong>{{ bill.customer_id }}</strong></p>
+            {% if bill.phone %}<p>Phone: {{ bill.phone }}</p>{% endif %}
+        </div>
+        <dl class="invoice-meta">
+            <div>
+                <dt>Bill date</dt>
+                <dd>{{ bill.bill_date | pretty_date }}</dd>
+            </div>
+            <div>
+                <dt>Payment</dt>
+                <dd>{{ bill.payment_method }}</dd>
+            </div>
+            <div>
+                <dt>Items</dt>
+                <dd>{{ items | length }}</dd>
+            </div>
+        </dl>
+    </section>
+
+    <div class="invoice-items-wrap">
+        <table class="invoice-items">
+            <thead>
+                <tr>
+                    <th class="inv-num">#</th>
+                    <th>Item description</th>
+                    <th class="align-center">Qty</th>
+                    <th class="align-right">Rate</th>
+                    <th class="align-right">Discount</th>
+                    <th class="align-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td class="inv-num">{{ "%02d" | format(loop.index) }}</td>
+                    <td>
+                        <strong>{{ item.item_name }}</strong>
+                        <span class="invoice-item-note">Good Indian Textile collection</span>
+                    </td>
+                    <td class="align-center">{{ item.quantity }}</td>
+                    <td class="align-right">{{ item.cost | inr }}</td>
+                    <td class="align-right">{% if item.discount %}{{ item.discount | inr }}{% else %}—{% endif %}</td>
+                    <td class="align-right"><strong>{{ item.total | inr }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="invoice-summary">
+        <div class="invoice-summary-left">
+            {% if bill.notes %}
+            <div class="invoice-note">
+                <span class="invoice-label">Notes</span>
+                <p>{{ bill.notes }}</p>
+            </div>
+            {% endif %}
+            <div class="amount-words">
+                <span class="invoice-label">Amount in words</span>
+                <p>{{ bill.total | words }}</p>
+            </div>
+        </div>
+
+        <dl class="invoice-totals">
+            <div>
+                <dt>Subtotal</dt>
+                <dd>{{ bill.subtotal | inr }}</dd>
+            </div>
+            <div>
+                <dt>Discount</dt>
+                <dd>− {{ bill.discount | inr }}</dd>
+            </div>
+            <div class="invoice-grand-total">
+                <dt>Grand total</dt>
+                <dd>{{ bill.total | inr }}</dd>
+            </div>
+        </dl>
+    </div>
+
+    <footer class="invoice-footer">
+        <div>
+            <span class="invoice-footer-star">✦</span>
+            <p>Thank you for shopping with <strong>Good Indian Textile</strong>.</p>
+            <small>We hope to see you again soon.</small>
+        </div>
+        <div class="invoice-footer-stamp">
+            <span>GOOD INDIAN</span>
+            <strong>TEXTILE</strong>
+            <small>WITH LOVE</small>
+        </div>
+    </footer>
+</article>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.querySelectorAll('[data-print]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            window.print();
+        });
+    });
+</script>
+{% endblock %}

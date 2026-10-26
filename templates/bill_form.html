@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if error %}
+<div class="alert alert-error" role="alert">
+    <span class="alert-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 8v5M12 17h.01"></path><circle cx="12" cy="12" r="9"></circle></svg>
+    </span>
+    <span>{{ error }}</span>
+</div>
+{% endif %}
+
+<form method="post" action="{{ url_for('new_bill') }}" id="billing-form" novalidate>
+    <div class="bill-layout">
+        <div class="bill-main">
+            <section class="panel form-panel">
+                <div class="panel-heading panel-heading-bordered">
+                    <div>
+                        <p class="section-kicker">Step 01</p>
+                        <h2>Customer details</h2>
+                    </div>
+                    <span class="step-chip">Required</span>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-field form-field-wide">
+                        <label for="customer_name">Customer name <span class="required-mark">*</span></label>
+                        <input type="text" id="customer_name" name="customer_name" value="{{ form_values.customer_name }}" placeholder="Enter the customer's full name" required maxlength="120" autocomplete="name">
+                    </div>
+
+                    <div class="form-field">
+                        <label for="customer_id">Customer ID <span class="required-mark">*</span></label>
+                        <input type="text" id="customer_id" name="customer_id" value="{{ form_values.customer_id }}" placeholder="e.g. GIT-C001" required maxlength="40" class="uppercase-input">
+                        <span class="field-hint">Use an existing ID for returning customers.</span>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="phone">Phone number <span class="optional-mark">Optional</span></label>
+                        <input type="tel" id="phone" name="phone" value="{{ form_values.phone }}" placeholder="10-digit mobile number" maxlength="20" autocomplete="tel">
+                    </div>
+
+                    <div class="form-field">
+                        <label for="bill_date">Bill date <span class="required-mark">*</span></label>
+                        <input type="date" id="bill_date" name="bill_date" value="{{ form_values.bill_date }}" required>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="bill_no">Bill number</label>
+                        <div class="readonly-field">
+                            <input type="text" id="bill_no" name="bill_no" value="{{ form_values.bill_no }}" readonly>
+                            <span class="lock-badge">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 018 0v4"></path></svg>
+                                Auto
+                            </span>
+                        </div>
+                        <span class="field-hint">Generated automatically for every bill.</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel form-panel">
+                <div class="panel-heading panel-heading-bordered">
+                    <div>
+                        <p class="section-kicker">Step 02</p>
+                        <h2>Items &amp; pricing</h2>
+                    </div>
+                    <span class="step-chip">{{ item_options|length }} categories</span>
+                </div>
+
+                <div class="items-table-wrap">
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th class="row-num">#</th>
+                                <th>Item</th>
+                                <th class="qty-col">Qty</th>
+                                <th>Cost (₹)</th>
+                                <th>Discount (₹)</th>
+                                <th class="align-right">Total</th>
+                                <th class="remove-col"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-body"></tbody>
+                    </table>
+                </div>
+
+                <div class="items-footer">
+                    <button type="button" class="btn btn-ghost" id="add-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+                        Add another item
+                    </button>
+                    <p class="items-hint">Discount is the rupee amount subtracted from each line.</p>
+                </div>
+
+                <div class="form-alert" id="form-alert" role="alert" hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 8v5M12 17h.01"></path><circle cx="12" cy="12" r="9"></circle></svg>
+                    <span id="form-alert-text"></span>
+                </div>
+            </section>
+        </div>
+
+        <aside class="bill-sidebar">
+            <section class="panel summary-panel">
+                <div class="summary-heading">
+                    <div>
+                        <p class="section-kicker">Step 03</p>
+                        <h2>Bill summary</h2>
+                    </div>
+                    <span class="summary-count" id="summary-count">1 item</span>
+                </div>
+
+                <dl class="summary-lines">
+                    <div>
+                        <dt>Subtotal</dt>
+                        <dd id="summary-subtotal">₹0.00</dd>
+                    </div>
+                    <div>
+                        <dt>Discount</dt>
+                        <dd class="discount-value" id="summary-discount">− ₹0.00</dd>
+                    </div>
+                </dl>
+
+                <div class="grand-total">
+                    <span>Grand total</span>
+                    <strong id="summary-total">₹0.00</strong>
+                </div>
+
+                <div class="summary-divider"></div>
+
+                <div class="form-field">
+                    <label for="payment_method">Payment method</label>
+                    <div class="select-wrap">
+                        <select id="payment_method" name="payment_method">
+                            {% for method in payment_methods %}
+                            <option value="{{ method }}" {% if form_values.payment_method == method %}selected{% endif %}>{{ method }}</option>
+                            {% endfor %}
+                        </select>
+                        <svg class="select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label for="notes">Notes <span class="optional-mark">Optional</span></label>
+                    <textarea id="notes" name="notes" rows="3" maxlength="500" placeholder="Any note for this bill...">{{ form_values.notes }}</textarea>
+                </div>
+
+                <input type="hidden" name="items_json" id="items-json">
+
+                <button type="submit" class="btn btn-primary btn-block btn-save">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path><path d="M17 21v-8H7v8M7 3v5h8"></path></svg>
+                    Save &amp; generate bill
+                </button>
+                <p class="save-note">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 018 0v4"></path></svg>
+                    Saved safely on this computer
+                </p>
+            </section>
+        </aside>
+    </div>
+</form>
+
+<template id="item-row-template">
+    <tr class="item-row">
+        <td class="row-num"><span class="row-number">1</span></td>
+        <td>
+            <div class="select-wrap">
+                <select data-field="item_name" aria-label="Item category" required>
+                    {% for option in item_options %}
+                    <option value="{{ option }}">{{ option }}</option>
+                    {% endfor %}
+                </select>
+                <svg class="select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+            </div>
+        </td>
+        <td class="qty-col">
+            <input type="number" data-field="quantity" value="1" min="1" step="1" inputmode="numeric" aria-label="Quantity" required>
+        </td>
+        <td>
+            <div class="rupee-input">
+                <span>₹</span>
+                <input type="number" data-field="cost" value="" min="0" step="0.01" inputmode="decimal" placeholder="0.00" aria-label="Cost per item" required>
+            </div>
+        </td>
+        <td>
+            <div class="rupee-input">
+                <span>₹</span>
+                <input type="number" data-field="discount" value="" min="0" step="0.01" inputmode="decimal" placeholder="0.00" aria-label="Discount amount">
+            </div>
+        </td>
+        <td class="align-right line-total" data-line-total>₹0.00</td>
+        <td class="remove-col">
+            <button type="button" class="remove-item" aria-label="Remove item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+            </button>
+        </td>
+    </tr>
+</template>
+
+<script type="application/json" id="initial-items">{{ initial_items | tojson }}</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/billing.js') }}"></script>
+{% endblock %}

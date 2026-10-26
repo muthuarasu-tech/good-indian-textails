@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero-banner">
+    <div class="hero-pattern" aria-hidden="true"></div>
+    <div class="hero-content">
+        <span class="hero-badge"><span>✦</span> Handpicked style, honest billing</span>
+        <h2>Every sale,<br><em>beautifully billed.</em></h2>
+        <p>Create polished invoices, apply discounts, and keep every customer's purchase in one organised place.</p>
+        <div class="hero-actions">
+            <a class="btn btn-gold" href="{{ url_for('new_bill') }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+                Create a bill
+            </a>
+            <a class="hero-text-link" href="{{ url_for('bills') }}">View billing history <span>→</span></a>
+        </div>
+    </div>
+    <div class="hero-emblem" aria-hidden="true">
+        <span class="emblem-ring"></span>
+        <span class="emblem-thread"></span>
+        <div class="emblem-center">
+            <span class="emblem-star">✦</span>
+            <strong>GI</strong>
+            <small>TEXTILE</small>
+        </div>
+        <span class="emblem-dot dot-one"></span>
+        <span class="emblem-dot dot-two"></span>
+        <span class="emblem-dot dot-three"></span>
+        <span class="emblem-dot dot-four"></span>
+    </div>
+</section>
+
+<section class="stats-grid" aria-label="Business summary">
+    <article class="stat-card">
+        <div class="stat-card-top">
+            <span class="stat-icon stat-icon-maroon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M4 19V9M10 19V5M16 19v-7M22 19V3"></path>
+                </svg>
+            </span>
+            <span class="stat-trend">Today</span>
+        </div>
+        <p class="stat-label">Today's sales</p>
+        <p class="stat-value">{{ stats.today_sales | inr }}</p>
+        <p class="stat-foot">Revenue recorded today</p>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-card-top">
+            <span class="stat-icon stat-icon-saffron">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="3" y="5" width="18" height="16" rx="3"></rect>
+                    <path d="M8 3v4M16 3v4M3 10h18M8 14h2M14 14h2M8 17h2"></path>
+                </svg>
+            </span>
+            <span class="stat-trend">This month</span>
+        </div>
+        <p class="stat-label">Monthly revenue</p>
+        <p class="stat-value">{{ stats.month_sales | inr }}</p>
+        <p class="stat-foot">All bills this month</p>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-card-top">
+            <span class="stat-icon stat-icon-green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M6 3h12a1 1 0 011 1v17l-3-2-2 2-2-2-2 2-2-2-3 2V4a1 1 0 011-1z"></path>
+                    <path d="M9 8h6M9 12h6"></path>
+                </svg>
+            </span>
+            <span class="stat-trend">{{ stats.items_sold }} items</span>
+        </div>
+        <p class="stat-label">Total bills</p>
+        <p class="stat-value">{{ stats.total_bills }}</p>
+        <p class="stat-foot">Invoices created so far</p>
+    </article>
+
+    <article class="stat-card">
+        <div class="stat-card-top">
+            <span class="stat-icon stat-icon-plum">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 12l-8 8-9-9V4h7l10 8z"></path>
+                    <circle cx="7.5" cy="7.5" r="1.5"></circle>
+                </svg>
+            </span>
+            <span class="stat-trend">Savings</span>
+        </div>
+        <p class="stat-label">Discounts given</p>
+        <p class="stat-value">{{ stats.total_discount | inr }}</p>
+        <p class="stat-foot">Across all customer bills</p>
+    </article>
+</section>
+
+<div class="dashboard-grid">
+    <section class="panel">
+        <div class="panel-heading">
+            <div>
+                <p class="section-kicker">Latest activity</p>
+                <h2>Recent bills</h2>
+            </div>
+            <a class="text-link" href="{{ url_for('bills') }}">View all <span>→</span></a>
+        </div>
+
+        {% if recent_bills %}
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Bill</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th class="align-right">Total</th>
+                        <th class="cell-action"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bill in recent_bills %}
+                    <tr>
+                        <td>
+                            <a class="bill-number" href="{{ url_for('view_bill', bill_id=bill.id) }}">{{ bill.bill_no }}</a>
+                            <span class="subtle-text">{{ bill.item_count }} item{% if bill.item_count != 1 %}s{% endif %}</span>
+                        </td>
+                        <td>
+                            <span class="customer-name">{{ bill.customer_name }}</span>
+                            <span class="subtle-text">{{ bill.customer_id }}</span>
+                        </td>
+                        <td>{{ bill.bill_date | pretty_date }}</td>
+                        <td class="align-right amount-cell">{{ bill.total | inr }}</td>
+                        <td class="cell-action">
+                            <a class="row-action" href="{{ url_for('view_bill', bill_id=bill.id) }}" aria-label="View {{ bill.bill_no }}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="empty-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M6 3h12a1 1 0 011 1v17l-3-2-2 2-2-2-2 2-2-2-3 2V4a1 1 0 011-1z"></path>
+                    <path d="M9 9h6M9 13h4"></path>
+                </svg>
+            </span>
+            <h3>No bills yet</h3>
+            <p>Your first invoice will appear here as soon as you create it.</p>
+            <a class="btn btn-primary btn-small" href="{{ url_for('new_bill') }}">Create your first bill</a>
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="panel category-panel">
+        <div class="panel-heading">
+            <div>
+                <p class="section-kicker">What's moving</p>
+                <h2>Top categories</h2>
+            </div>
+            <span class="panel-badge">By revenue</span>
+        </div>
+
+        {% if top_categories %}
+        <div class="category-list">
+            {% for category in top_categories %}
+            <div class="category-item">
+                <div class="category-info">
+                    <span class="category-index">{{ "%02d" | format(loop.index) }}</span>
+                    <span class="category-name">{{ category.item_name }}</span>
+                    <span class="category-revenue">{{ category.revenue | inr }}</span>
+                </div>
+                <div class="category-track">
+                    <span class="category-bar" style="width: {{ (category.revenue / max_category * 100) | round(1) if max_category else 0 }}%"></span>
+                </div>
+                <span class="category-units">{{ category.units }} unit{% if category.units != 1 %}s{% endif %} sold</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state empty-state-small">
+            <span class="empty-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M4 7l8-4 8 4-8 4-8-4z"></path>
+                    <path d="M4 12l8 4 8-4M4 17l8 4 8-4"></path>
+                </svg>
+            </span>
+            <h3>Nothing to show yet</h3>
+            <p>Top-selling categories will appear after your first few bills.</p>
+        </div>
+        {% endif %}
+
+        <div class="tip-card">
+            <span class="tip-icon">✦</span>
+            <div>
+                <strong>A little billing tip</strong>
+                <p>Add every item on one bill. The discount and grand total are calculated automatically.</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#651d2b">
+    <title>{% block title %}{{ page_title }} · {{ business.name }}{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-shell">
+        <div class="sidebar-backdrop" data-sidebar-close></div>
+
+        <aside class="sidebar" id="sidebar">
+            <a class="brand" href="{{ url_for('dashboard') }}" aria-label="{{ business.name }} home">
+                <span class="brand-mark" aria-hidden="true">
+                    <span class="brand-mark-inner">GI</span>
+                </span>
+                <span class="brand-copy">
+                    <strong>Good Indian</strong>
+                    <small>Textile</small>
+                </span>
+            </a>
+
+            <div class="sidebar-rule" aria-hidden="true">
+                <span></span>
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2.1 6.4L21 12l-6.9 2.6L12 21l-2.1-6.4L3 12l6.9-2.6L12 3z" fill="currentColor"/></svg>
+                <span></span>
+            </div>
+
+            <nav class="sidebar-nav" aria-label="Main navigation">
+                <span class="nav-label">Workspace</span>
+
+                <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="3" width="7" height="7" rx="2"></rect>
+                        <rect x="14" y="3" width="7" height="7" rx="2"></rect>
+                        <rect x="3" y="14" width="7" height="7" rx="2"></rect>
+                        <rect x="14" y="14" width="7" height="7" rx="2"></rect>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+
+                <a class="nav-link {% if active_page == 'new_bill' %}active{% endif %}" href="{{ url_for('new_bill') }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14"></path>
+                        <circle cx="12" cy="12" r="9"></circle>
+                    </svg>
+                    <span>New Bill</span>
+                </a>
+
+                <a class="nav-link {% if active_page == 'bills' %}active{% endif %}" href="{{ url_for('bills') }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M6 3h12a1 1 0 011 1v17l-3-2-2 2-2-2-2 2-2-2-3 2V4a1 1 0 011-1z"></path>
+                        <path d="M9 8h6M9 12h6M9 16h3"></path>
+                    </svg>
+                    <span>All Bills</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-note">
+                <span class="sidebar-note-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z"></path>
+                        <path d="M9.5 12l1.7 1.7 3.5-3.5"></path>
+                    </svg>
+                </span>
+                <div>
+                    <strong>Secure &amp; local</strong>
+                    <p>Your billing records stay on this computer.</p>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <span class="footer-ornament">✦</span>
+                <span>Made for every Indian family</span>
+            </div>
+        </aside>
+
+        <main class="main">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="icon-button menu-toggle" type="button" data-sidebar-open aria-label="Open navigation">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                            <path d="M4 7h16M4 12h16M4 17h16"></path>
+                        </svg>
+                    </button>
+                    <div>
+                        <p class="eyebrow">{{ page_eyebrow }}</p>
+                        <h1>{{ page_title }}</h1>
+                    </div>
+                </div>
+                <div class="topbar-actions">
+                    <span class="date-chip">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="5" width="18" height="16" rx="3"></rect>
+                            <path d="M8 3v4M16 3v4M3 10h18"></path>
+                        </svg>
+                        {{ today.strftime('%d %b %Y') }}
+                    </span>
+                    {% if active_page == 'new_bill' %}
+                    <a class="btn btn-secondary topbar-button" href="{{ url_for('bills') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 3h12a1 1 0 011 1v17l-3-2-2 2-2-2-2 2-2-2-3 2V4a1 1 0 011-1z"></path></svg>
+                        <span>All Bills</span>
+                    </a>
+                    {% else %}
+                    <a class="btn btn-primary topbar-button" href="{{ url_for('new_bill') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+                        <span>New Bill</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </header>
+
+            <div class="content">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-stack">
+                            {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}" role="status">
+                                <span class="alert-icon" aria-hidden="true">
+                                    {% if category == 'success' %}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+                                    {% else %}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 8v5M12 17h.01"></path><circle cx="12" cy="12" r="9"></circle></svg>
+                                    {% endif %}
+                                </span>
+                                <span>{{ message }}</span>
+                                <button type="button" class="alert-close" onclick="this.parentElement.remove()" aria-label="Dismiss">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+
+                <footer class="page-footer">
+                    <span>{{ business.name }}</span>
+                    <span class="footer-dot">✦</span>
+                    <span>Billing workspace</span>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="bill-totals">
+    <div class="mini-stat">
+        <span class="mini-stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12a1 1 0 011 1v17l-3-2-2 2-2-2-2 2-2-2-3 2V4a1 1 0 011-1z"></path><path d="M9 8h6M9 12h6"></path></svg>
+        </span>
+        <div>
+            <span class="mini-stat-label">{% if search %}Matching bills{% else %}Total bills{% endif %}</span>
+            <strong>{{ totals.count }}</strong>
+        </div>
+    </div>
+    <div class="mini-stat">
+        <span class="mini-stat-icon mini-stat-icon-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"></path></svg>
+        </span>
+        <div>
+            <span class="mini-stat-label">Billed amount</span>
+            <strong>{{ totals.total | inr }}</strong>
+        </div>
+    </div>
+    <div class="mini-stat">
+        <span class="mini-stat-icon mini-stat-icon-saffron">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12l-8 8-9-9V4h7l10 8z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg>
+        </span>
+        <div>
+            <span class="mini-stat-label">Discounts</span>
+            <strong>{{ totals.discount | inr }}</strong>
+        </div>
+    </div>
+    <a class="mini-stat mini-stat-action" href="{{ url_for('new_bill') }}">
+        <span class="mini-stat-icon mini-stat-icon-solid">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+        </span>
+        <div>
+            <span class="mini-stat-label">Ready to bill?</span>
+            <strong>Create new</strong>
+        </div>
+        <span class="mini-stat-arrow">→</span>
+    </a>
+</section>
+
+<section class="panel bills-panel">
+    <div class="bills-toolbar">
+        <div>
+            <p class="section-kicker">Records</p>
+            <h2>Billing history</h2>
+        </div>
+        <form class="search-form" method="get" action="{{ url_for('bills') }}" role="search">
+            <span class="search-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+            </span>
+            <input type="search" name="search" value="{{ search }}" placeholder="Search bill, name, ID or phone..." aria-label="Search bills">
+            {% if search %}
+            <a class="search-clear" href="{{ url_for('bills') }}" aria-label="Clear search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+            </a>
+            {% endif %}
+            <button class="btn btn-secondary search-button" type="submit">Search</button>
+        </form>
+    </div>
+
+    {% if bills %}
+    <div class="table-wrap">
+        <table class="data-table bills-table">
+            <thead>
+                <tr>
+                    <th>Bill no.</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Items</th>
+                    <th>Payment</th>
+                    <th class="align-right">Total</th>
+                    <th class="cell-actions"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bill in bills %}
+                <tr>
+                    <td><a class="bill-number" href="{{ url_for('view_bill', bill_id=bill.id) }}">{{ bill.bill_no }}</a></td>
+                    <td>
+                        <span class="customer-name">{{ bill.customer_name }}</span>
+                        <span class="subtle-text">{{ bill.customer_id }}{% if bill.phone %} · {{ bill.phone }}{% endif %}</span>
+                    </td>
+                    <td class="nowrap">{{ bill.bill_date | pretty_date }}</td>
+                    <td><span class="count-pill">{{ bill.item_count }}</span></td>
+                    <td><span class="payment-pill">{{ bill.payment_method }}</span></td>
+                    <td class="align-right amount-cell">{{ bill.total | inr }}</td>
+                    <td class="cell-actions">
+                        <a class="icon-action" href="{{ url_for('view_bill', bill_id=bill.id) }}" title="View invoice" aria-label="View invoice {{ bill.bill_no }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </a>
+                        <form method="post" action="{{ url_for('delete_bill', bill_id=bill.id) }}" class="inline-form" data-confirm="Delete {{ bill.bill_no }}? This cannot be undone.">
+                            <button class="icon-action icon-action-danger" type="submit" title="Delete bill" aria-label="Delete bill {{ bill.bill_no }}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 15H6L5 6M10 11v5M14 11v5"></path></svg>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state empty-state-roomy">
+        <span class="empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"></circle>
+                <path d="M20 20l-4-4"></path>
+            </svg>
+        </span>
+        {% if search %}
+        <h3>No bills found</h3>
+        <p>No records match “{{ search }}”. Try a different name, ID, or bill number.</p>
+        <a class="btn btn-secondary btn-small" href="{{ url_for('bills') }}">Clear search</a>
+        {% else %}
+        <h3>Your billing history starts here</h3>
+        <p>Create your first bill and it will appear in this list.</p>
+        <a class="btn btn-primary btn-small" href="{{ url_for('new_bill') }}">Create a bill</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
